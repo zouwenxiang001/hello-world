@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+
+    <!-- 1. This element specifies the location of a DB2 JDBC driver. -->
+<!--    <classPathEntry location="/Program Files/IBM/SQLLIB/java/db2java.zip" />-->
+
+    <context id="DB2Tables" targetRuntime="MyBatis3">
+
+        <!-- 8. This property is used to specify whether MBG will include any coments in the generated code.
+         The property supports these values -->
+        <commentGenerator>
+            <property name="suppressAllComments" value="true" />
+        </commentGenerator>
+
+        <!-- 2、配置数据库连接 -->
+        <!--
+            2. This element will connect to a DB2 database configured as MBGTEST
+            in the DB2 client configuration utility,
+            using the default install location for the JDBC driver.
+         -->
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:mysql://localhost:3306/ssm_crud1?useSSL=false"
+                        userId="root"
+                        password="password">
+        </jdbcConnection>
+
+        <!-- 3. This element specifies that we always want to use the
+        java.math.BigDecimal type for DECIMAL and NUMERIC columns. -->
+        <javaTypeResolver >
+            <property name="forceBigDecimals" value="false" />
+        </javaTypeResolver>
+
+        <!-- 4. 指定 JavaBean 生成的位置 -->
+        <!-- 4. This element specifies that we always want to place generated classes
+        in the "'test.model" package and that we want to use subpackages based on
+        the table schema and catalog. We also want String columns trimmed. -->
+        <javaModelGenerator
+                targetPackage="com.atzwx.ssm_crud1.bean"
+                targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="true" />
+            <property name="trimStrings" value="true" />
+        </javaModelGenerator>
+
+        <!-- 5、指定sql映射文件生成的位置 -->
+        <!--
+         5. This element specifies that we always want to place generated SQL Maps in the "'test.model"
+         package and that we want to use subpackages based on the table schema and catalog.
+         -->
+        <sqlMapGenerator
+                targetPackage="mapper"
+                targetProject=".\src\main\resources">
+            <property name="enableSubPackages" value="true" />
+        </sqlMapGenerator>
+
+        <!-- 6、指定dao接口生成的位置，mapper接口 -->
+        <!--
+        This element specifies that we always want to place generated interfaces and objects in the
+        "'test.model" package and that we want to use subpackages based on the table schema and catalog.
+        It also specifies that we want to generate mapper interfaces that reference an XML configuration file
+        for MyBatis3.
+        -->
+        <javaClientGenerator
+                type="XMLMAPPER"
+                targetPackage="com.atzwx.ssm_crud1.dao"
+                targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="true" />
+        </javaClientGenerator>
+
+        <!-- 7、table指定每个表的生成策略 -->
+        <!-- 7. This element specifies that we always want to generate code for a table called MYTABLE
+        in schema MYSCHEMA. We also want to ignore a column called "fred" in the table,
+        and we want to override the column "BEG_DATE" so that the generated property name will be
+        "startDate".-->
+        <table tableName="tbl_emp" domainObjectName="Employee" ></table>
+        <table tableName="tbl_dept" domainObjectName="Department" ></table>
+
+    </context>
+
+</generatorConfiguration>

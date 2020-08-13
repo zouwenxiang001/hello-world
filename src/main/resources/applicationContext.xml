@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!-- Spring 的配置文件， 这里主要配置的业务逻辑有关的 -->
+    <!-- Spring's configuration file, where the main configuration is related to the business logic. -->
+
+    <context:component-scan base-package="com.atzwx.ssm_crud1">
+        <context:exclude-filter type="annotation"
+                                expression="org.springframework.stereotype.Controller" />
+    </context:component-scan>
+
+    <!-- 1、数据源， 事务控制，与 MyBatis 的整合 -->
+    <!-- 1. Data source, transaction control, integration with MyBatis. -->
+    <context:property-placeholder location="classpath:dbconfig.properties" />
+    <bean
+            id="pooledDataSource"
+            class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="jdbcUrl" value="${jdbc.jdbcUrl}"></property>
+        <property name="driverClass" value="${jdbc.driverClass}"></property>
+        <property name="user" value="${jdbc.user}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+    </bean>
+
+    <!-- 2、配置 与 MyBatis 的整合 -->
+    <!-- 2. Configuration integration with MyBatis. -->
+    <bean id="sqlSessionFactory"
+          class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- ①、指定 MyBatis 全局配置文件的位置 -->
+        <!-- ①. Specify the location of the MyBatis global configuration file. -->
+        <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+        <property name="dataSource" ref="pooledDataSource"></property>
+
+        <!-- ②、指定 MyBatis，Mapper文件的位置 -->
+        <!-- ②. Specify MyBatis, Mapper file location. -->
+        <property name="mapperLocations" value="classpath:mapper/*.xml"></property>
+    </bean>
+
+    <!-- 3、配置扫描器， 将 MyBatis 接口的实现加入到 IOC 容器中 -->
+    <!-- 3. Configuration the scanner to add the implementation of the MyBatis interface to the IOC container. -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 扫描所有 dao 接口的实现， 加入 到 IOC 容器中 -->
+        <!-- Scan all DAO interface implementations and add them to the IOC container. -->
+        <property name="basePackage" value="com.atzwx.ssm_crud1.dao"></property>
+    </bean>
+
+    <!-- 配置一个可以执行批量的sqlSession -->
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory"></constructor-arg>
+        <constructor-arg name="executorType" value="BATCH"></constructor-arg>
+    </bean>
+
+
+    <!-- 4、事务控制的配置 -->
+    <!-- 4. Configuration of transaction control. -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!-- （1）、控制住数据源 -->
+        <!-- (1). Control the data source. -->
+        <property name="dataSource" ref="pooledDataSource"></property>
+    </bean>
+
+    <!-- （2）、开启基于注解的事务， 使用 xml 配置形式事务（必要主要的都是使用配置式） -->
+    <!-- (2). Enable annotation-based transactions, using XML configuration transactions(configuration is essential). -->
+    <aop:config>
+        <!-- ①、切入点表达式 -->
+        <!-- ①. Pointcut expressiong. -->
+        <aop:pointcut expression="execution(* com.atzwx.ssm_crud1.service..*(..))" id="txPoint" />
+        <!-- ②、配置事务增强 -->
+        <!-- ②. Configure transaction enhancement. -->
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="txPoint" />
+    </aop:config>
+
+    <!-- （3）、配置事务增强， 事务如何切入 -->
+    <!-- (3). Configure transaction enhancement. How do transaction enter. -->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <!-- ①、所有方法都是事务方法 -->
+            <!-- ①、All methods are transactional methods. -->
+            <tx:method name="*" />
+            <!-- ②、以 get 开始的所有方法 -->
+            <!-- ②、All methoas that start with GET. -->
+            <tx:method name="get*" read-only="true" />
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- Spring 配置文件的核心点 （数据源、与 MyBatis 的整合， 事务控制） -->
+    <!-- Core point of Spring configuration file (data source, integretion with MyBatis, transaction control.) -->
+
+</beans>
